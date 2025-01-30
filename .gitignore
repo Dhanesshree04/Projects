@@ -1,52 +1,97 @@
-# Prerequisites
-*.d
+#include <Wire.h> // Include Wire library for I2C communication
+#include <LiquidCrystal_I2C.h> // Include LCD library for I2C LCD
+#include <stdio.h> // Include standard I/O library
+#include <stdlib.h> // Include standard library
 
-# Object files
-*.o
-*.ko
-*.obj
-*.elf
+// Define I2C address, rows, and columns for LCD
+#define LCD_ADDR 0x27
+#define LCD_ROWS 2
+#define LCD_COLS 16
 
-# Linker output
-*.ilk
-*.map
-*.exp
+// Initialize LCD object
+LiquidCrystal_I2C lcd(LCD_ADDR, LCD_COLS, LCD_ROWS);
 
-# Precompiled Headers
-*.gch
-*.pch
+// Initialize variables for voltage readings
+int val_a, val_b, val_c;
+int val1, val2, val3;
 
-# Libraries
-*.lib
-*.a
-*.la
-*.lo
+// Function prototypes
+void setup();
+void loop();
+int adc(int pin);
 
-# Shared objects (inc. Windows DLLs)
-*.dll
-*.so
-*.so.*
-*.dylib
+// Setup function to initialize the LCD display
+void setup() {
+  lcd.init(); // Initialize LCD
+  lcd.backlight(); // Turn on backlight
+  lcd.print("VOLTAGE SENSOR");
+  lcd.setCursor(0, 1);
+  lcd.print("SOLAR , BAT , EV");
+  delay(5000); // Pause for 5 seconds
+  lcd.clear();
+}
 
-# Executables
-*.exe
-*.out
-*.app
-*.i*86
-*.x86_64
-*.hex
+// Loop function for continuous operation
+void loop() {
+  float temp1, temp2, temp3;
 
-# Debug files
-*.dSYM/
-*.su
-*.idb
-*.pdb
+  // Simulated analog readings from sensors
+  val_a = adc(0);
+  val_b = adc(1);
+  val_c = adc(2);
 
-# Kernel Module Compile Results
-*.mod*
-*.cmd
-.tmp_versions/
-modules.order
-Module.symvers
-Mkfile.old
-dkms.conf
+  // Convert analog readings to voltage values
+  temp1 = (float)val_a / 4.092;
+  temp2 = (float)val_b / 4.092;
+  temp3 = (float)val_c / 4.092;
+
+  // Scale voltage values and convert to integers
+  val1 = (int)(temp1 / 10);
+  val2 = (int)(temp2 / 10);
+  val3 = (int)(temp3 / 10);
+
+  // Display solar voltage on the LCD
+  lcd.setCursor(0, 1);
+  lcd.print("S: ");
+  lcd.print(val2);
+  lcd.print("V");
+  delay(100);
+
+  // Display battery voltage on the LCD
+  lcd.setCursor(0, 0);
+  lcd.print("B: ");
+  lcd.print(val1);
+  lcd.print("V");
+  delay(100);
+
+  // Display electric vehicle voltage on the LCD
+  lcd.setCursor(8, 0);
+  lcd.print("EV: ");
+  lcd.print(val3);
+  lcd.print("V");
+  delay(100);
+
+  // Check battery voltage and display maximum distance
+  if (val1 > 11) {
+    lcd.setCursor(8, 1);
+    lcd.print(" Max 11KM");
+  } else {
+    lcd.setCursor(8, 1);
+    lcd.print(" Max 9KM");
+  }
+  delay(100);
+}
+
+// Function to simulate analogRead
+int adc(int pin) {
+  return 1023; // Replace this with the actual analogRead function
+}
+
+// Main function
+int main() {
+  setup(); // Call the setup function to initialize the LCD
+  while (1) {
+    loop(); // Continuous loop for the main program
+  }
+  return 0;
+}
